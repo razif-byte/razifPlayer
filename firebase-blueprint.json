@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and media player settings",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "playbackSpeed": { "type": "number" },
+        "repeatMode": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "email", "displayName", "createdAt", "updatedAt"]
+    },
+    "Playlist": {
+      "title": "Playlist",
+      "description": "Media playlist containing songs or videos",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "itemCount": { "type": "integer" },
+        "isFavorite": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "itemCount", "createdAt", "updatedAt"]
+    },
+    "MediaItem": {
+      "title": "MediaItem",
+      "description": "An audio or video item in a playlist or history",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "playlistId": { "type": "string" },
+        "title": { "type": "string" },
+        "artist": { "type": "string" },
+        "mediaUri": { "type": "string" },
+        "mediaType": { "type": "string" },
+        "durationMs": { "type": "integer" },
+        "playbackPositionMs": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "mediaUri", "mediaType", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profile document"
+    },
+    "/users/{userId}/playlists/{playlistId}": {
+      "schema": { "$ref": "#/entities/Playlist" },
+      "description": "User created and favorite playlists"
+    },
+    "/users/{userId}/playlists/{playlistId}/items/{itemId}": {
+      "schema": { "$ref": "#/entities/MediaItem" },
+      "description": "Tracks and videos within a playlist"
+    },
+    "/users/{userId}/history/{historyId}": {
+      "schema": { "$ref": "#/entities/MediaItem" },
+      "description": "Recently played media history"
+    }
+  }
+}

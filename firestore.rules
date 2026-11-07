@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidTimestamp(val) {
+      return val is timestamp && val <= request.time;
+    }
+
+    function isValidUser(data, userId) {
+      return data.userId == userId
+        && data.email is string && data.email.size() > 0
+        && data.displayName is string
+        && data.playbackSpeed is number
+        && data.repeatMode is string
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidPlaylist(data, userId) {
+      return data.userId == userId
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.itemCount is int && data.itemCount >= 0
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidMediaItem(data, userId) {
+      return data.userId == userId
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.mediaUri is string && data.mediaUri.size() > 0
+        && data.mediaType is string && (data.mediaType == 'AUDIO' || data.mediaType == 'VIDEO')
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data, userId);
+      allow update: if isOwner(userId)
+                    && isValidUser(request.resource.data, userId)
+                    && request.resource.data.userId == resource.data.userId
+                    && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isOwner(userId);
+
+      match /playlists/{playlistId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidPlaylist(request.resource.data, userId);
+        allow update: if isOwner(userId)
+                      && isValidPlaylist(request.resource.data, userId)
+                      && request.resource.data.userId == resource.data.userId
+                      && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if isOwner(userId);
+
+        match /items/{itemId} {
+          allow read: if isOwner(userId);
+          allow create: if isOwner(userId) && isValidMediaItem(request.resource.data, userId);
+          allow update: if isOwner(userId)
+                        && isValidMediaItem(request.resource.data, userId)
+                        && request.resource.data.userId == resource.data.userId
+                        && request.resource.data.createdAt == resource.data.createdAt;
+          allow delete: if isOwner(userId);
+        }
+      }
+
+      match /history/{historyId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidMediaItem(request.resource.data, userId);
+        allow update: if isOwner(userId)
+                      && isValidMediaItem(request.resource.data, userId)
+                      && request.resource.data.userId == resource.data.userId
+                      && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

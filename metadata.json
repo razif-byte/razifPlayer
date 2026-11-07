@@ -1,0 +1,6 @@
+{
+  "name": "Razif Player",
+  "description": "Lightweight audio & video player with playlist support, playback speed controls, and intuitive interface.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
